@@ -20,7 +20,6 @@
 package com.baidu.hugegraph.structure;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -35,7 +34,6 @@ import com.baidu.hugegraph.HugeException;
 import com.baidu.hugegraph.HugeGraph;
 import com.baidu.hugegraph.backend.id.EdgeId;
 import com.baidu.hugegraph.backend.id.Id;
-import com.baidu.hugegraph.backend.id.IdGenerator;
 import com.baidu.hugegraph.backend.id.SplicingIdGenerator;
 import com.baidu.hugegraph.backend.query.QueryResults;
 import com.baidu.hugegraph.backend.serializer.BytesBuffer;
@@ -47,7 +45,6 @@ import com.baidu.hugegraph.type.HugeType;
 import com.baidu.hugegraph.type.define.Cardinality;
 import com.baidu.hugegraph.type.define.Directions;
 import com.baidu.hugegraph.type.define.HugeKeys;
-import com.baidu.hugegraph.util.DateUtil;
 import com.baidu.hugegraph.util.E;
 import com.google.common.collect.ImmutableList;
 
@@ -59,14 +56,12 @@ public class HugeEdge extends HugeElement implements Edge, Cloneable {
     protected HugeVertex sourceVertex;
     protected HugeVertex targetVertex;
     protected boolean isOutEdge;
-    protected long expiredTime;
 
     public HugeEdge(HugeVertex sourceVertex, Id id, EdgeLabel label,
                     HugeVertex targetVertex) {
         this(sourceVertex.graph(), id, label);
         this.sourceVertex = sourceVertex;
         this.targetVertex = targetVertex;
-        this.expiredTime = 0L;
         this.isOutEdge = true;
         this.fresh = true;
     }
@@ -80,7 +75,6 @@ public class HugeEdge extends HugeElement implements Edge, Cloneable {
         this.name = null;
         this.sourceVertex = null;
         this.targetVertex = null;
-        this.expiredTime = 0L;
         this.isOutEdge = true;
     }
 
@@ -423,36 +417,6 @@ public class HugeEdge extends HugeElement implements Edge, Cloneable {
 
     public HugeVertex otherVertex() {
         return this.isOutEdge ? this.targetVertex() : this.sourceVertex();
-    }
-
-    public void setExpiredTime() {
-        EdgeLabel edgeLabel = this.schemaLabel();
-        if (edgeLabel.ttl() == 0L) {
-            return;
-        }
-        long now = DateUtil.now().getTime();
-        if (edgeLabel.ttlStartTime() == IdGenerator.ZERO) {
-            this.expiredTime(now + edgeLabel.ttl());
-            return;
-        }
-        Date date = this.getPropertyValue(edgeLabel.ttlStartTime());
-        if (date == null) {
-            this.expiredTime(now + edgeLabel.ttl());
-            return;
-        }
-        long expired = date.getTime() + edgeLabel.ttl();
-        E.checkArgument(expired > now,
-                        "The expired time '%s' of '%s' is prior to now: %s",
-                        new Date(expired), this, DateUtil.now());
-        this.expiredTime(expired);
-    }
-
-    public long expiredTime() {
-        return this.expiredTime;
-    }
-
-    public void expiredTime(long expiredTime) {
-        this.expiredTime = expiredTime;
     }
 
     /**
