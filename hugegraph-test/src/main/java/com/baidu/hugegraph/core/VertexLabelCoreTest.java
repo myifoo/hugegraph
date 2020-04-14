@@ -566,7 +566,7 @@ public class VertexLabelCoreTest extends SchemaCoreTest {
 
 
     @Test
-    public void testAddEdgeLabelWithTtl() {
+    public void testAddVertexLabelWithTtl() {
         super.initPropertyKeys();
 
         SchemaManager schema = graph().schema();
