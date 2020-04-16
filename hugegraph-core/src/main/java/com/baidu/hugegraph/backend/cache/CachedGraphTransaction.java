@@ -181,7 +181,7 @@ public final class CachedGraphTransaction extends GraphTransaction {
     }
 
     private Iterator<HugeVertex> queryVerticesByIds(IdQuery query) {
-        long now = DateUtil.now().getTime();
+        long now = this.graph().now();
         IdQuery newQuery = new IdQuery(HugeType.VERTEX, query);
         List<HugeVertex> vertices = new ArrayList<>();
         for (Id vertexId : query.ids()) {
@@ -243,7 +243,7 @@ public final class CachedGraphTransaction extends GraphTransaction {
         Object value = this.edgesCache.get(cacheKey);
         Collection<HugeEdge> edges = (Collection<HugeEdge>) value;
         if (value != null) {
-            long now = DateUtil.now().getTime();
+            long now = this.graph().now();
             for (HugeEdge edge : edges) {
                 if (0L < edge.expiredTime() && edge.expiredTime() < now) {
                     this.edgesCache.invalidate(cacheKey);

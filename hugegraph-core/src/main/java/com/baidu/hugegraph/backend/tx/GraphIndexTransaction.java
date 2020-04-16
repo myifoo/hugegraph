@@ -586,7 +586,8 @@ public class GraphIndexTransaction extends AbstractTransaction {
         if (this.store().features().supportsTtl() || showExpired) {
             return;
         }
-        for (HugeIndex.IdWithExpiredTime id : index.expiredElementIds()) {
+        long now = this.graph().now();
+        for (HugeIndex.IdWithExpiredTime id : index.expiredElementIds(now)) {
             HugeIndex removeIndex = index.clone();
             removeIndex.resetElementIds();
             removeIndex.elementIds(id.id(), id.expiredTime());
